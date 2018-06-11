@@ -1,8 +1,11 @@
+if: branch = master
+if: tag =~ ^v*
+
 dist: trusty
 sudo: false
 # Use generic to avoid travis-ci overwriting CC and CXX
 # See: https://stackoverflow.com/questions/35110123/travis-ci-with-c14-and-linux
-language: generic 
+language: generic
 
 # Default git clone --recursive clones unnecessary dependencies so we override
 # it with our own command in before_install
@@ -28,50 +31,36 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      env: CXX=g++-5
-      addons:
-        apt:
-          sources: *sources
-          packages: 
-            - g++-5
-
-    - os: linux
-      env: CXX=g++-7
-      addons:
-        apt:
-          sources: *sources
-          packages: 
-            - g++-7
-
-    - os: linux
-      env: CXX=clang++-3.6
-      addons:
-        apt:
-          sources: *sources
-          packages: 
-            - clang-3.6
-            - g++-5
-
-    - os: linux
       env: CXX=clang++-6.0
       addons:
         apt:
           sources: *sources
           packages:
             - clang-6.0
-            - g++-5
-
-    - os: osx
-      osx_image: xcode9.2
-      env: CXX=clang++
+            - g++-7
 
 before_install:
   - git submodule update --init
   - eval "${INSTALL}"
 
 script:
-  - cmake -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Debug .
+  - cmake -DCMAKE_INSTALL_PREFIX=release -DCMAKE_BUILD_TYPE=release .
   - cmake --build . -- -j 3
-  - cmake --build . --target install
-  - ./install/bin/cquery --ci --log-all-to-stderr --test-unit
-  - ./install/bin/cquery --ci --log-all-to-stderr --test-index
+  - cmake --build . --target install --config release
+  - ./release/bin/cquery --ci --log-all-to-stderr --test-unit
+  - ./release/bin/cquery --ci --log-all-to-stderr --test-index
+
+# Copied from cquery-project/cquery
+before_deploy:
+  - ci/before_deploy.sh $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  api_key:
+    secure: OqyEBS0jlw/gBmQ1H68LnyxrlWVlbeLHzk6hAQvEO3xuWaw8AyPQer6orPbk9iv8Uen5yHQYmEeFrl/VF5Wa93Zmtb5GqRFjp2mWDV09OeCi8sIyq8vaGBIHgIhFoJxkm+8oASRix/qqdMAoI0ZpzDvgwVAGbypwkyb7jOlXkKuvegjsYz5IRxLkqoSbPiaO0iGqvgdjOskLX68Z9KcVn2S4QTbo9sW2Ym0cP+RbjphQbCyI60AiLlTl7vuE4iYTkOkgaq7JdirUifF46yD24PuktXTqpYQbazuHeD6Txpr7pFlxxYwNrJJp0Y3WeWDd1DKZk8txtdOsrOt/0NPnvybT9jHlCffSkaEVCzlOtZlVk6EqLiSRkSs3b/bQ4588gnAaALcDxmv2J1i3+4/NYH6vQ7qup59cT0KRLDO3/+LSPdO3VTAnA+PyvxeEPlEuHiAY555zLu7wblTRmsRwz5XbXM+OD15eCseUEolZO4Fc5xMqZl81dTBvGxHDGMl7HFtauPwAxFBJOTsgUNnlwCmARTLeDskp87D4iBOkj3ct6pZ4JPfPf+7ar3bSjPbfHjKXH9QMIUZ42qpq46nlhCAi6Tb0s4pl2KiS5hdsWtt5Sh24kbaXhDx4lgL6/dbaqPOez73US09KjzppVfttO1QKCs00H+lISd2yk6mfGY4=
+  file: release/cquery-$TRAVIS_TAG-x86_64-unknown-linux-gnu.tar.xz
+  skip_cleanup: true
+  on:
+    repo: patilarpith/cquery
+    tags: true
+
