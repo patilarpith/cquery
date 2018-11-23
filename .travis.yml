@@ -31,12 +31,12 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      env: CC=gcc-7 CXX=g++-7
+      env: CC=gcc-6 CXX=g++-6
       addons:
         apt:
           sources: *sources
           packages:
-            - g++-7
+            - g++-6
 
 before_install:
   - git submodule update --init
