@@ -1,7 +1,7 @@
 if: branch = master
 if: tag =~ ^v*
 
-dist: trusty
+dist: xenial
 sudo: false
 # Use generic to avoid travis-ci overwriting CC and CXX
 # See: https://stackoverflow.com/questions/35110123/travis-ci-with-c14-and-linux
@@ -18,12 +18,12 @@ addons:
     sources: &sources
       - ubuntu-toolchain-r-test
       - llvm-toolchain-precise-3.6
-      - llvm-toolchain-trusty-6.0
+      - llvm-toolchain-xenial-7
 
 cache:
   directories:
-    - clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/
-    - clang+llvm-6.0.0-x86_64-apple-darwin/
+    - clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04/
+    - clang+llvm-7.0.0-x86_64-apple-darwin/
 
 # When building with Clang GCC still has to be installed to provide libstdc++
 # that Clang uses (Clang doesn't bundle libc++)
